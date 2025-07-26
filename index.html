@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"> <!-- ❌ Fix: wrong syntax was used before -->
+  <title>Note App</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+body {
+  font-family: 'Poppins', sans-serif;
+  padding: 30px;
+  background: linear-gradient(135deg, #fef9ff, #e8d4f4);
+  color: #333;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+h1 {
+  font-size: 2rem;
+  color: #8844ee;
+}
+
+.note-form, .search-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 500px;
+  margin: 0 auto 20px auto;
+}
+
+input[type="text"], textarea {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-size: 1rem;
+  resize: none;
+}
+
+textarea {
+  height: 100px;
+}
+
+button {
+  background: #8844ee;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button:hover {
+  background: #6f35c0;
+  transform: scale(1);
+  transition: transform 0.2s ease, background 0.3s ease;
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+#notesContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  padding: 10px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.note-card {
+  background: white;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 10px 15px rgba(136, 68, 238, 0.1);
+  border: 1px solid #e2c8fa;
+  transition: transform 0.2s ease;
+}
+
+.note-card:hover {
+  transform: translateY(-5px) scale(1.02);
+}
+
+.note-card h3 {
+  margin-top: 0;
+  color: #4a148c;
+}
+
+.note-card p {
+  margin: 8px 0 12px;
+}
+
+.note-card button {
+  background: #ff4d4d;
+  font-size: 0.9rem;
+  padding: 7px 12px;
+  border-radius: 8px;
+}
+
+.note-card button:hover {
+  animation: shake 0.2s ease;
+}
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  50% { transform: translateX(2px); }
+  75% { transform: translateX(-2px); }
+  100% { transform: translateX(0); }
+}
+
+#addNoteBtn {
+  background: #6c47ff;
+  box-shadow: 0 4px 8px rgba(108, 71, 255, 0.2);
+}
+
+.note-card button {
+  background: #ff6969;
+  box-shadow: 0 4px 8px rgba(255, 105, 105, 0.2);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.note-card {
+  animation: fadeIn 0.4s ease;
+}
+
+#searchInput:focus {
+  border-color: #bb86fc;
+  box-shadow: 0 0 8px rgba(187, 134, 252, 0.3);
+  outline: none;
+}
+
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>📝 My Note App</h1>
+</header>
+
+<section class="note-form">
+  <input type="text" id="title" placeholder="Note Title" />
+  <textarea id="content" placeholder="Write a note..."></textarea>
+  <button id="addNoteBtn">➕ Add Note</button> <!-- ✅ Fix: ID should match -->
+</section>
+
+<section class="search-bar">
+  <input type="text" id="searchInput" placeholder="🔍 Search notes..." />
+</section>
+
+<section id="notesContainer"> <!-- ✅ Fix: use id not class for JS -->
+  <!-- Notes will be dynamically added here -->
+</section>
+
+<script>
+let notes = []; // ✅ Variable name should match (you had 'note')
+
+document.getElementById("addNoteBtn").addEventListener("click", function () { // ✅ 'docment' → 'document', 'Function' → 'function'
+  const title = document.getElementById("title").value;
+  const content = document.getElementById("content").value;
+
+  if (title && content) {
+    const note = { title, content, id: Date.now() }; // ✅ Corrected syntax (id: ...)
+    notes.push(note);
+    localStorage.setItem("notes", JSON.stringify(notes));
+    displayNotes();
+  }
+});
+
+function displayNotes() {
+  const container = document.getElementById("notesContainer");
+  container.innerHTML = "";
+  notes.forEach(note => {
+    container.innerHTML += `
+      <div class="note-card">
+        <h3>${note.title}</h3>
+        <p>${note.content}</p>
+        <button onclick="deleteNote(${note.id})">🗑️ Delete</button>
+      </div>
+    `;
+  });
+}
+
+function deleteNote(id) {
+  notes = notes.filter(n => n.id !== id);
+  localStorage.setItem("notes", JSON.stringify(notes));
+  displayNotes();
+}
+
+window.onload = function () {
+  const savedNotes = JSON.parse(localStorage.getItem("notes"));
+  if (savedNotes) notes = savedNotes;
+  displayNotes();
+}
+
+document.getElementById("searchInput").addEventListener("input", function(e) {
+  const value = e.target.value.toLowerCase();
+  const filtered = notes.filter(n =>
+    n.title.toLowerCase().includes(value) || n.content.toLowerCase().includes(value)
+  );
+  displayFilteredNotes(filtered);
+});
+
+function displayFilteredNotes(filteredNotes) { // ✅ You were missing this function!
+  const container = document.getElementById("notesContainer");
+  container.innerHTML = "";
+  filteredNotes.forEach(note => {
+    container.innerHTML += `
+      <div class="note-card">
+        <h3>${note.title}</h3>
+        <p>${note.content}</p>
+        <button onclick="deleteNote(${note.id})">🗑️ Delete</button>
+      </div>
+    `;
+  });
+}
+</script>
+
+<footer style="text-align:center; margin-top: 50px; font-size: 0.9rem; color: #999;">
+  Made with 💜 by Akshaya Reddy
+</footer>
+
+</body>
+</html>
